@@ -1,19 +1,11 @@
 import math
 import json
 
-#m = [[0,1,0,0,1],[1,0,1,1,1],[0,1,0,1,0],[0,1,1,0,1],[1,1,0,1,0]]
-
-m = [
-    [0,0,1,1,0,1,0],
-    [0,0,1,0,0,0,0],
-    [1,1,0,1,0,0,0],
-    [1,0,1,0,0,0,0],
-    [0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,1],
-    [0,0,0,0,1,1,0]
-    ]
-
 def findGirth(matrix):
+
+    if not matrix:
+        print("Enter a Valid Filepath")
+        return 
 
     if not checkSquareMatrix(matrix):
         print("Not A Square Matrix")
@@ -75,6 +67,29 @@ def checkSymmetric(matrix):
 
     return not counter%2
 
+def getMatrix(filepath):
+
+    try:
+        f = open(filepath, "r")
+        lines = f.readlines()
+    except:
+        return False
+
+    matrix = []
+
+    for line in lines:
+        row = []
+        for bit in line.strip('\n'):
+            #if bit != '\n':
+            try:
+                row.append(int(bit))
+            except ValueError:
+                row.append(bit)
+
+        matrix.append(row)
+    
+    return(matrix)
+
 def girth(matrix):
     length = len(matrix)
     girth = math.inf
@@ -86,8 +101,9 @@ def girth(matrix):
         graph[v]["id"] = v
         graph[v]["color"] = "WHITE"
         graph[v]["d"] = 0
+        graph[v]["ancestors"] = []
         graph[v]["parent"] = None
-
+        
     graph[0]["color"] = "GRAY"
     graph[0]["d"] = 0
     graph[0]["parent"] = None
@@ -100,29 +116,39 @@ def girth(matrix):
         for j in range(length):
             edge = matrix[u["id"]][j]
             if edge:
-                print(graph[j]["color"])
                 if graph[j]["color"] == "WHITE":
                     graph[j]["color"] = "GRAY"
                     graph[j]["d"] = u["d"] + 1
                     graph[j]["parent"] = u
+                    graph[j]["ancestors"] += u["ancestors"]
+                    graph[j]["ancestors"].append(u["id"])
                     Q.append(graph[j])
                     q = len(Q)
-                elif graph[j]["color"] == "GRAY" and graph[u['id']]['parent']['id'] != graph[j]['id']:
-                    cycleLength = graph[u["id"]]["d"] + graph[j]["d"] + 1
+                elif graph[j]["color"] == "GRAY" and u['parent']['id'] != graph[j]['id']:
+                    for vert in reversed(graph[j]['ancestors']):
+                        if vert in u['ancestors']:
+                            parentDistance = graph[vert]["d"]
+                            cycleLength = (u["d"] + graph[j]["d"] - parentDistance*2) + 1
+                            break
+                        else:
+                            cycleLength = u["d"] + graph[j]["d"] + 1
                     if cycleLength < girth :
                         girth = cycleLength
-                        shortestCycle = f"{graph[u['id']]['id']} --> {graph[j]['id']} --> {graph[j]['parent']['id']} --> "
-                        parent = graph[j]["parent"]
-                        for k in range(girth-2):
-                            if parent['parent'] != None:
-                                shortestCycle += f"{parent['parent']['id']} --> "
-                        shortestCycle += f"{graph[u['id']]['id']}"
-
-
+                        shortestCycle = f"{u['id']} --> {graph[j]['id']} --> "
+                        for ancestor in reversed(graph[j]['ancestors']):
+                            shortestCycle += f"{ancestor} --> "
+                            if ancestor in u['ancestors']:
+                                break
+                        for grancestor in reversed(u['ancestors']):
+                            if grancestor not in graph[j]['ancestors']:
+                                shortestCycle += f"{grancestor} --> "   
+                        shortestCycle += f"{u['id']}"                           
+                        
         u["color"] = "BLACK"
-
-    print(json.dumps(graph, indent = 2))
+    #print(json.dumps(graph, indent = 2))
     print(f"Shortest Cycle: {shortestCycle}")
     return(girth)
 
-findGirth(m)
+while True:
+    filepath = input("Please Enter Filepath: ")
+    findGirth(getMatrix(filepath))
