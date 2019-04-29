@@ -33,7 +33,6 @@ def checkSquareMatrix(matrix):
     for i in range(length):
         if len(matrix[i]) != length:
             return False
-
     return True
 
 def checkBitValueEntries(matrix):
@@ -44,7 +43,6 @@ def checkBitValueEntries(matrix):
         for j in range(length):
             if ((matrix[i][j] != 1) and (matrix[i][j] != 0)):
                 return False
-
     return True
 
 def checkSelfLoops(matrix):
@@ -64,7 +62,6 @@ def checkSymmetric(matrix):
     for i in range(length):
         for j in range(length):
             counter += matrix[i][j]
-
     return not counter%2
 
 def getMatrix(filepath):
@@ -76,18 +73,14 @@ def getMatrix(filepath):
         return False
 
     matrix = []
-
     for line in lines:
         row = []
         for bit in line.strip('\n'):
-            #if bit != '\n':
             try:
                 row.append(int(bit))
             except ValueError:
                 row.append(bit)
-
         matrix.append(row)
-    
     return(matrix)
 
 def girth(matrix):
@@ -105,10 +98,7 @@ def girth(matrix):
         graph[v]["parent"] = None
         
     graph[0]["color"] = "GRAY"
-    graph[0]["d"] = 0
-    graph[0]["parent"] = None
-    Q = []
-    Q.append(graph[0])
+    Q = [graph[0]]
     q = len(Q)
     while q != 0:
         u = Q.pop(0)
